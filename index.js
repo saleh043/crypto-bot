@@ -24,11 +24,11 @@ async function getPrice() {
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
 
-  if (message.content.toLowerCase().startsWith("how much")) {
+  if (message.content.toLowerCase().startsWith("!price")) {
     const amount = parseFloat(message.content.split(" ")[2]);
 
     if (isNaN(amount)) {
-      return message.reply("❌ Use: how much 10");
+      return message.reply("❌ Use: !price");
     }
 
     const price = await getPrice();
@@ -37,7 +37,7 @@ client.on("messageCreate", async (message) => {
     const total = amount * price;
 
     message.reply(
-      `💰 1 token = $${price}\n🧮 ${amount} tokens = **$${total.toFixed(
+      `💰 1 swall = $${price}\n🧮 ${amount} tokens = **$${total.toFixed(
         4
       )} USD**`
     );
