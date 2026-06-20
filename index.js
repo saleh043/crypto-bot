@@ -9,20 +9,19 @@ const client = new Client({
   ],
 });
 
-// Your token mint (Solana)
+// Token mint (your coin)
 const TOKEN_MINT = "9QYxvrwTZHKneY1tiqnq6dEAcLCp5SUUi9JkeP4fpump";
 
-// Bot ready
+// Bot ready event
 client.once("ready", () => {
-  console.log("✅ Bot is online as " + client.user.tag);
+  console.log("✅ Bot online as " + client.user.tag);
 });
 
-// Fetch price
+// Get price from DexScreener
 async function getPrice() {
   try {
-    const res = await axios.get(
-      "https://api.dexscreener.com/latest/dex/tokens/" + TOKEN_MINT
-    );
+    const url = "https://api.dexscreener.com/latest/dex/tokens/" + TOKEN_MINT;
+    const res = await axios.get(url);
 
     const pair = res.data.pairs && res.data.pairs[0];
     if (!pair) return null;
@@ -42,20 +41,20 @@ client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
 
   const args = message.content.trim().split(" ");
-  const command = args[0].toLowerCase();
+  const cmd = args[0].toLowerCase();
 
   // HELP
-  if (command === "!help") {
+  if (cmd === "!help") {
     return message.reply(
       "📖 Commands:\n\n" +
-      "!price <swall amount>" +
+      "!price <amount>\n" +
       "!help - Show help\n\n" +
       "Example:\n!price 100"
     );
   }
 
   // PRICE
-  if (command === "!price") {
+  if (cmd === "!price") {
     const amount = Number(args[1]);
 
     if (!amount || isNaN(amount)) {
@@ -70,11 +69,11 @@ client.on("messageCreate", async (message) => {
 
     const total = amount * token.price;
 
-    const msg =
+    const response =
       "💰 " + token.symbol + " Price: $" + token.price + "\n\n" +
       "🧮 " + amount + " " + token.symbol + " = $" + total.toFixed(6) + " USD";
 
-    return message.reply(msg);
+    return message.reply(response);
   }
 });
 
