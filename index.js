@@ -9,19 +9,17 @@ const client = new Client({
   ],
 });
 
-// Token mint (your coin)
 const TOKEN_MINT = "9QYxvrwTZHKneY1tiqnq6dEAcLCp5SUUi9JkeP4fpump";
 
-// Bot ready event
 client.once("ready", () => {
   console.log("✅ Bot online as " + client.user.tag);
 });
 
-// Get price from DexScreener
 async function getPrice() {
   try {
-    const url = "https://api.dexscreener.com/latest/dex/tokens/" + TOKEN_MINT;
-    const res = await axios.get(url);
+    const res = await axios.get(
+      "https://api.dexscreener.com/latest/dex/tokens/" + TOKEN_MINT
+    );
 
     const pair = res.data.pairs && res.data.pairs[0];
     if (!pair) return null;
@@ -36,24 +34,23 @@ async function getPrice() {
   }
 }
 
-// Messages
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
 
   const args = message.content.trim().split(" ");
   const cmd = args[0].toLowerCase();
 
-  // HELP
+  // HELP COMMAND
   if (cmd === "!help") {
     return message.reply(
       "📖 Commands:\n\n" +
-      "!price <amount>\n" +
-      "!help - Show help\n\n" +
+      "!price <amount> - Calculate token value\n" +
+      "!help - Show commands\n\n" +
       "Example:\n!price 100"
     );
   }
 
-  // PRICE
+  // PRICE COMMAND
   if (cmd === "!price") {
     const amount = Number(args[1]);
 
@@ -69,13 +66,11 @@ client.on("messageCreate", async (message) => {
 
     const total = amount * token.price;
 
-    const response =
-      "💰 " + token.symbol + " Price: $" + token.price + "\n\n" +
-      "🧮 " + amount + " " + token.symbol + " = $" + total.toFixed(6) + " USD";
-
-    return message.reply(response);
+    return message.reply(
+      "💰 " + token.symbol + " Price: $" + token.price +
+      "\n\n🧮 " + amount + " " + token.symbol + " = $" + total.toFixed(6) + " USD"
+    );
   }
 });
 
-// Login
 client.login(process.env.TOKEN);
