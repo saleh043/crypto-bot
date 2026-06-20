@@ -9,58 +9,56 @@ const client = new Client({
   ],
 });
 
-// Your token mint (Solana token)
+// Your token mint (Solana)
 const TOKEN_MINT = "9QYxvrwTZHKneY1tiqnq6dEAcLCp5SUUi9JkeP4fpump";
 
-// Bot ready event
+// Bot ready
 client.once("ready", () => {
-  console.log(`✅ Logged in as ${client.user.tag}`);
+  console.log("✅ Bot is online as " + client.user.tag);
 });
 
-// Get token price from DexScreener
+// Fetch price
 async function getPrice() {
   try {
     const res = await axios.get(
-      `https://api.dexscreener.com/latest/dex/tokens/${TOKEN_MINT}`
+      "https://api.dexscreener.com/latest/dex/tokens/" + TOKEN_MINT
     );
 
-    const pair = res.data.pairs?.[0];
+    const pair = res.data.pairs && res.data.pairs[0];
     if (!pair) return null;
 
     return {
-      price: parseFloat(pair.priceUsd),
+      price: Number(pair.priceUsd),
       symbol: pair.baseToken?.symbol || "TOKEN",
     };
   } catch (err) {
-    console.error("API error:", err.message);
+    console.log("API error:", err.message);
     return null;
   }
 }
 
-// Message handler
+// Messages
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
 
   const args = message.content.trim().split(" ");
   const command = args[0].toLowerCase();
 
-  // HELP COMMAND
+  // HELP
   if (command === "!help") {
     return message.reply(
-      `📖 Commands:
-!price <swall amount>
-!help - Show commands
-
-Example:
-!price 100`
+      "📖 Commands:\n\n" +
+      "!price <amount> - Get token value\n" +
+      "!help - Show help\n\n" +
+      "Example:\n!price 100"
     );
   }
 
-  // PRICE COMMAND
+  // PRICE
   if (command === "!price") {
-    const amount = parseFloat(args[1]);
+    const amount = Number(args[1]);
 
-    if (isNaN(amount)) {
+    if (!amount || isNaN(amount)) {
       return message.reply("❌ Usage: !price <amount>\nExample: !price 100");
     }
 
@@ -72,11 +70,11 @@ Example:
 
     const total = amount * token.price;
 
-    return message.reply(
-      `💰 ${token.symbol} Price: $${token.price}
+    const msg =
+      "💰 " + token.symbol + " Price: $" + token.price + "\n\n" +
+      "🧮 " + amount + " " + token.symbol + " = $" + total.toFixed(6) + " USD";
 
-🧮 ${amount} ${token.symbol} = $${total.toFixed(6)} USD`
-    );
+    return message.reply(msg);
   }
 });
 
