@@ -1,6 +1,7 @@
 const { Client, GatewayIntentBits } = require("discord.js");
 const axios = require("axios");
 
+// Create bot client
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -9,67 +10,63 @@ const client = new Client({
   ],
 });
 
+// Your token mint
 const TOKEN_MINT = "9QYxvrwTZHKneY1tiqnq6dEAcLCp5SUUi9JkeP4fpump";
 
+// Bot ready
 client.once("ready", () => {
-  console.log("✅ Bot online as " + client.user.tag);
+  console.log(`✅ Logged in as ${client.user.tag}`);
 });
 
+// Get price from DexScreener
 async function getPrice() {
   try {
-    const response = await axios.get(
+    const res = await axios.get(
       "https://api.dexscreener.com/latest/dex/tokens/" + TOKEN_MINT
     );
 
-    const pair = response.data.pairs?.[0];
-
+    const pair = res.data.pairs?.[0];
     if (!pair) return null;
 
     return {
       price: Number(pair.priceUsd),
-      symbol: pair.baseToken?.symbol || "SWALL",
-      name: pair.baseToken?.name || "SWALL",
+      symbol: pair.baseToken?.symbol || "TOKEN",
     };
-  } catch (error) {
-    console.error("Price fetch error:", error.message);
+  } catch (err) {
+    console.log("Error:", err.message);
     return null;
   }
 }
 
+// Commands
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
 
-  const args = message.content.trim().split(/\s+/);
-  const command = args[0].toLowerCase();
+  const args = message.content.trim().split(" ");
+  const cmd = args[0].toLowerCase();
 
-  if (command === "!price") {
+  // PRICE COMMAND
+  if (cmd === "!price") {
     const amount = Number(args[1]);
 
     if (isNaN(amount)) {
-      return message.reply(
-        "❌ Usage: !price <amount>\nExample: !price 100"
-      );
+      return message.reply("❌ Usage: !price <amount> (example: !price 100)");
     }
 
     const token = await getPrice();
 
     if (!token) {
-      return message.reply("❌ Unable to fetch token price.");
+      return message.reply("❌ Price not available right now.");
     }
 
     const total = amount * token.price;
 
     return message.reply(
-      "💰 " + token.name + " (" + token.symbol + ")\n\n" +
-      "📈 Current Price: $" + token.price + "\n" +
-      "🧮 " + amount + " " + token.symbol + " = $" + total.toFixed(6) + " USD"
+      "💰 " + token.symbol + " Price: $" + token.price + "\n\n" +
+      "🧮 " + amount + " = $" + total.toFixed(6) + " USD"
     );
   }
 });
 
-if (!process.env.TOKEN) {
-  console.error("❌ TOKEN environment variable not found.");
-  process.exit(1);
-}
-
+// LOGIN (IMPORTANT)
 client.login(process.env.TOKEN);
