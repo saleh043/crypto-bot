@@ -47,7 +47,7 @@ client.on("messageCreate", async (message) => {
 
     if (isNaN(amount)) {
       return message.reply(
-        "❌ Usage: `!price <amount>`\nExample: `!price 100`"
+        "❌ Usage: !price <amount>\nExample: !price 100"
       );
     }
 
@@ -66,5 +66,10 @@ client.on("messageCreate", async (message) => {
     );
   }
 });
+
+if (!process.env.TOKEN) {
+  console.error("❌ TOKEN environment variable not found.");
+  process.exit(1);
+}
 
 client.login(process.env.TOKEN);
