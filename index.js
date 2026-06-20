@@ -9,35 +9,32 @@ GatewayIntentBits.MessageContent,
 ],
 });
 
-// Your token mint
 const TOKEN_MINT = "9QYxvrwTZHKneY1tiqnq6dEAcLCp5SUUi9JkeP4fpump";
 
-// Bot ready event
 client.once("ready", () => {
 console.log(`✅ Logged in as ${client.user.tag}`);
 });
 
-// Fetch token price from DexScreener
 async function getPrice() {
 try {
-const url = `https://api.dexscreener.com/latest/dex/tokens/${TOKEN_MINT}`;
-const res = await axios.get(url);
+const response = await axios.get(
+`https://api.dexscreener.com/latest/dex/tokens/${TOKEN_MINT}`
+);
 
 ```
-const pair = res.data.pairs?.[0];
+const pair = response.data.pairs?.[0];
 
 if (!pair) return null;
 
 return {
   price: parseFloat(pair.priceUsd),
-  change24h: pair.priceChange?.h24 || "N/A",
-  liquidity: pair.liquidity?.usd || "N/A",
-  volume24h: pair.volume?.h24 || "N/A",
+  name: pair.baseToken?.name || "SWALL",
+  symbol: pair.baseToken?.symbol || "SWALL",
 };
 ```
 
 } catch (error) {
-console.error("DexScreener Error:", error.message);
+console.error("Error fetching price:", error.message);
 return null;
 }
 }
@@ -45,52 +42,43 @@ return null;
 client.on("messageCreate", async (message) => {
 if (message.author.bot) return;
 
-const content = message.content.toLowerCase();
+const args = message.content.trim().split(" ");
+const command = args[0].toLowerCase();
 
-// Help command
-if (content === "!help") {
+if (command === "!help") {
 return message.reply(
-`📖 Commands
-
-!price <amount> - Calculate token value
-!help - Show this help message
-
-Example:
-!price 100`
+"📖 Commands:\n\n" +
+"!price <amount> - Calculate token value\n" +
+"!help - Show commands\n\n" +
+"Example:\n!price 100"
 );
 }
 
-// Price command
-if (content.startsWith("!price")) {
-const args = message.content.split(" ");
+if (command === "!price") {
 const amount = parseFloat(args[1]);
 
 ```
 if (isNaN(amount)) {
   return message.reply(
-    "❌ Please provide a valid amount.\nExample: !price 100"
+    "❌ Please enter a valid amount.\nExample: !price 100"
   );
 }
 
-const tokenData = await getPrice();
+const token = await getPrice();
 
-if (!tokenData) {
+if (!token) {
   return message.reply(
-    "❌ Unable to fetch token price right now."
+    "❌ Could not fetch token price right now."
   );
 }
 
-const total = amount * tokenData.price;
+const total = amount * token.price;
 
 return message.reply(
-  `💰 SWALL Price: $${tokenData.price}
+  `💰 ${token.symbol} Price: $${token.price}
 ```
 
-🧮 ${amount} SWALL = $${total.toFixed(6)}
-
-📈 24h Change: ${tokenData.change24h}%
-💧 Liquidity: $${Number(tokenData.liquidity).toLocaleString()}
-📊 24h Volume: $${Number(tokenData.volume24h).toLocaleString()}`
+🧮 ${amount} ${token.symbol} = $${total.toFixed(6)} USD`
 );
 }
 });
