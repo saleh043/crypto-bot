@@ -48,7 +48,7 @@ client.on("messageCreate", async (message) => {
   if (command === "!help") {
     return message.reply(
       "📖 Commands:\n\n" +
-      "!price <amount> - Get token value\n" +
+      "!price <swall amount>" +
       "!help - Show help\n\n" +
       "Example:\n!price 100"
     );
