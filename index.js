@@ -9,12 +9,15 @@ const client = new Client({
   ],
 });
 
+// Token mint (your coin)
 const TOKEN_MINT = "9QYxvrwTZHKneY1tiqnq6dEAcLCp5SUUi9JkeP4fpump";
 
+// Bot ready
 client.once("ready", () => {
   console.log("✅ Bot online as " + client.user.tag);
 });
 
+// Get price from DexScreener
 async function getPrice() {
   try {
     const res = await axios.get(
@@ -34,19 +37,23 @@ async function getPrice() {
   }
 }
 
+// Commands
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
 
   const args = message.content.trim().split(" ");
   const cmd = args[0].toLowerCase();
 
-  // HELP COMMAND
+  // HELP COMMAND (nice UI)
   if (cmd === "!help") {
     return message.reply(
-      "📖 Commands:\n\n" +
-      "!price <amount> - Calculate token value\n" +
-      "!help - Show commands\n\n" +
-      "Example:\n!price 100"
+      "🤖 **Crypto Bot Help Menu**\n\n" +
+      "📊 **Commands:**\n" +
+      "• `!price <amount>` → Check token value\n" +
+      "• `!help` → Show this help menu\n\n" +
+      "💡 **Example:**\n" +
+      "`!price 100`\n\n" +
+      "⚡ This bot tracks live token price from DexScreener"
     );
   }
 
@@ -55,7 +62,9 @@ client.on("messageCreate", async (message) => {
     const amount = Number(args[1]);
 
     if (!amount || isNaN(amount)) {
-      return message.reply("❌ Usage: !price <amount>\nExample: !price 100");
+      return message.reply(
+        "❌ Invalid usage!\n👉 Example: `!price 100`"
+      );
     }
 
     const token = await getPrice();
@@ -67,10 +76,12 @@ client.on("messageCreate", async (message) => {
     const total = amount * token.price;
 
     return message.reply(
-      "💰 " + token.symbol + " Price: $" + token.price +
-      "\n\n🧮 " + amount + " " + token.symbol + " = $" + total.toFixed(6) + " USD"
+      "💰 **" + token.symbol + " Price:** $" + token.price + "\n\n" +
+      "🧮 **Calculation:**\n" +
+      amount + " " + token.symbol + " = $" + total.toFixed(6) + " USD"
     );
   }
 });
 
+// Login
 client.login(process.env.TOKEN);
